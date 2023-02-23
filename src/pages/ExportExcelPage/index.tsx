@@ -7,6 +7,7 @@
 
 import React from "react";
 import ExportExcel from "../../components/ExportExcel";
+import DownloadExcel from "../../components/DownloadExcel";
 export default ()=>{
 // data数据
   let dataTable = [
@@ -42,5 +43,8 @@ export default ()=>{
     total: 1,
     dataMapping: arr,
   };
-  return <ExportExcel {...option} />;
+  return <div>
+    <ExportExcel {...option} />
+    <DownloadExcel {...option} />
+  </div>;
 }

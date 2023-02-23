@@ -18,6 +18,7 @@ import {
   Space,
   InputNumber,
 } from 'antd';
+import "antd/dist/antd.css";
 import moment from 'moment';
 import styles from './index.less';
 

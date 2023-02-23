@@ -1,8 +1,8 @@
 /**
- * @description :导出excel数据
- * @author：蒋梅
- * @email :
- * @creatTime : 2022/01/17
+ * @description 导出excel数据
+ * @author 蒋梅
+ * @email
+ * @creatTime  2022/10/27
  */
 import React, { useState } from 'react';
 //@ts-ignore
@@ -12,7 +12,6 @@ import "antd/dist/antd.css";
 // @ts-ignore
 import { saveAs } from 'file-saver';
 import { DownloadOutlined } from '@ant-design/icons';
-
 // import { useDispatch,Dispatch } from "umi";
 interface ListItem {
   label: string;
@@ -28,7 +27,7 @@ export interface DataMappingItem {
   dataMappingMethod?: (values: any, record?: any) => string;
 }
 
-interface ExportExcelProps {
+interface DownloadExcelProps {
   /** 导出文件的名称 */
   fileName: string;
   /** 获取数据的地址，需要分页 */
@@ -53,12 +52,14 @@ interface ExportExcelProps {
   asyncMethod?: (value: any) => Promise<any>;
 }
 
-const ExportExcel = (props: ExportExcelProps) => {
+const DownloadExcel = (props: DownloadExcelProps) => {
   // const dispatch:Dispatch=useDispatch();
+  // 多少条数据创建一个sheet表
+  const SHEET_SIZE = 1000000;
   // 当前已经存储的所有数据列表
   let allRecords: any[] = [];
   const {
-    fileName,
+    fileName='导出',
     url,
     sheetData,
     sheetFilter,
@@ -82,12 +83,10 @@ const ExportExcel = (props: ExportExcelProps) => {
       const pageCount = Math.ceil(total / pageSize);
       setExporting(true);
       for (let index = 0; index < pageCount; index++) {
-        let size = pageSize;
-        if (index === pageCount - 1) {
-          size = total % pageSize || pageSize;
-        }
-        console.log('正在导出第', index, '页', size);
-
+        // let size = pageSize;
+        // if (index === pageCount - 1) {
+        //   size = total % pageSize || pageSize;
+        // }
         // const result =
         //   (await dispatch({
         //     type: url,
@@ -149,29 +148,21 @@ const ExportExcel = (props: ExportExcelProps) => {
   /**
    * 导出excel（下载excel）
    * @param sheetSetting 表中需要配置的参数
-   * @param getAllRecords 请求数据的方法
-   * @param total 总条数
-   * @param exportFileName 文件名字
    *
    */
   const downloadExcel = async (
     sheetSetting: any,
-    getAllRecords: any,
-    total: number,
-    exportFileName: string,
   ) => {
+    try {
     let sheet = [];
-    const SHEET_SIZE = 1000000;
-    const allRecords = await getAllRecords().catch((e: any) => {
-      console.log(e);
+    const allRecords = await getAllRecords().catch(() => {
       message.warning('导出失败！！');
       setExporting(false);
-      return false;
     });
     if (total > SHEET_SIZE) {
       let len = Math.ceil(total / SHEET_SIZE);
       for (let i = 0; i < len; i++) {
-        let exportData = allRecords.slice(
+        let exportData = allRecords?.slice(
           i * SHEET_SIZE,
           i * SHEET_SIZE + SHEET_SIZE,
         );
@@ -181,12 +172,15 @@ const ExportExcel = (props: ExportExcelProps) => {
       sheet = [{ sheetData: allRecords || [], ...sheetSetting }];
     }
     const option = {
-      fileName: exportFileName,
+      fileName: fileName,
       saveAsBlob: true,
       datas: sheet,
     };
     const excelFile = new ExportJsonExcel(option).saveExcel();
-    saveAs(excelFile, `${exportFileName}.xlsx`);
+    saveAs(excelFile, `${fileName}.xlsx`);
+    }catch (e){
+      message.warning('导出失败！！');
+    }
   };
 
   /**
@@ -199,7 +193,7 @@ const ExportExcel = (props: ExportExcelProps) => {
       sheetHeader: sheetHeader,
       rowHeight: 30,
     };
-    downloadExcel(sheetSetting, getAllRecords, total, fileName).catch(() => {
+    downloadExcel(sheetSetting).catch(() => {
       setExporting(false);
       message.warning('导出失败！！').then();
     });
@@ -219,4 +213,4 @@ const ExportExcel = (props: ExportExcelProps) => {
     </Button>
   );
 };
-export default ExportExcel;
+export default DownloadExcel;
